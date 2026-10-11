@@ -36,7 +36,7 @@ function tick(now){if(!playing)return;const next=audioReady?Math.floor(audio.cur
 audio.addEventListener('ended',()=>{if(playing){seekToFrame(project.duration*project.fps-1);pause()}});
 window.lesson={ready:async()=>{await loaded;await document.fonts.ready},seekToFrame,getProject:()=>project,
  bounds:()=>{if($('visual').style.display==='none')return [];const v=$('visual').getBoundingClientRect(),st=$('stage').getBoundingClientRect(),k=st.width/project.width,ox=(v.x-st.x)/k,oy=(v.y-st.y)/k;return customBounds.map(b=>({...b,x:b.x+ox,y:b.y+oy,container:'visual'}))}};
-const loaded=(async()=>{const res=await fetch(projectUrl);if(!res.ok)throw Error('Cannot load project.json');project=await res.json();await window.view3dReady;await Promise.all(PRELOAD.map(u=>{const i=new Image();i.src=u;return i.decode()}));if(!project.variants[variant])variant=Object.keys(project.variants)[0];
+const loaded=(async()=>{const res=await fetch(projectUrl);if(!res.ok)throw Error('Cannot load project.json');project=await res.json();await window.view3dReady;await Promise.all(PRELOAD.map(u=>new Promise(r=>{const i=new Image();i.onload=i.onerror=r;i.src=u})));// load (not decode): decode() waits while the tab is hiddenif(!project.variants[variant])variant=Object.keys(project.variants)[0];
  await loadFonts();$('stage').style.width=project.width+'px';$('stage').style.height=project.height+'px';$('checked').textContent=project.checked_at||'';if(project.title)$('pageTitle').textContent=project.title;
  $('seek').max=Math.round(project.duration*project.fps)-1;variants();chapters();setAudio();scale();await seekToFrame(0);window.dispatchEvent(new Event('lesson-ready'))})();
 $('play').onclick=()=>playing?pause():play();
